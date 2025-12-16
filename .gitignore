@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 out/
+/src/generated/prisma
+
+.env
