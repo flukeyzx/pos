@@ -10,7 +10,7 @@ export function createMainWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, "../preload/index.ts"),
+      preload: path.join(__dirname, "../preload/index.js"),
     },
   });
 

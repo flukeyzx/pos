@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { createUser, getUsers } from "../services/user.service";
+import { createUser, getUsers } from "../services/user.service.js";
 
 export function registerUserIPC() {
   ipcMain.handle("user:create", async (_event, payload) => {

@@ -21,6 +21,7 @@ const App = () => {
 
   const fetchUsers = async () => {
     try {
+      console.log("Api Hit fetchUsers");
       const data = await window.electronAPI.user.list();
       setUsers(data);
     } catch (error) {

@@ -1,5 +1,8 @@
 import { app } from "electron";
-import { bootstrapApp } from "./app";
+import { bootstrapApp } from "./app.js";
+import { config } from "dotenv";
+
+config();
 
 bootstrapApp();
 
