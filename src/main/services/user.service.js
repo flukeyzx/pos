@@ -1,7 +1,7 @@
 // import prisma from "../db.js";
 
-export async function createUser(data: { username: string; password: string }) {
-  console.log("Api Hit createUser");
+export async function createUser(data) {
+  console.log("[MAIN PROCESS] Api Hit createUser with:", data.username);
   return {
     id: data.username,
     username: data.username,

@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
 
-interface User {
-  id: number;
-  username: string;
-  password: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 const App = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,18 +21,26 @@ const App = () => {
     }
   };
 
-  const handleCreateUser = async (e: React.FormEvent) => {
+  const handleCreateUser = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await window.electronAPI.user.create({ username, password });
+      console.log("[RENDERER] About to call user.create with:", {
+        username,
+        password,
+      });
+      const result = await window.electronAPI.user.create({
+        username,
+        password,
+      });
+      console.log("[RENDERER] user.create successful:", result);
       setUsername("");
       setPassword("");
       // Refresh the user list
       await fetchUsers();
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("[RENDERER] Error creating user:", error);
     } finally {
       setLoading(false);
     }
