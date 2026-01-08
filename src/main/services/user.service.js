@@ -1,24 +1,15 @@
-// import prisma from "../db.js";
+import prisma from "../db.js";
 
 export async function createUser(data) {
-  console.log("[MAIN PROCESS] Api Hit createUser with:", data.username);
-  return {
-    id: data.username,
-    username: data.username,
-    password: data.password,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  const newUser = await prisma.user.create({
+    data: {
+      username: data.username,
+      password: data.password,
+    },
+  });
+  return newUser;
 }
 
 export async function getUsers() {
-  return [
-    {
-      id: "1",
-      username: "admin",
-      password: "admin",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
+  return await prisma.user.findMany();
 }

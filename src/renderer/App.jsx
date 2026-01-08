@@ -6,14 +6,12 @@ const App = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch users on mount
   useEffect(() => {
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
     try {
-      console.log("Api Hit fetchUsers");
       const data = await window.electronAPI.user.list();
       setUsers(data);
     } catch (error) {
@@ -26,18 +24,14 @@ const App = () => {
     setLoading(true);
 
     try {
-      console.log("[RENDERER] About to call user.create with:", {
-        username,
-        password,
-      });
       const result = await window.electronAPI.user.create({
         username,
         password,
       });
-      console.log("[RENDERER] user.create successful:", result);
+
       setUsername("");
       setPassword("");
-      // Refresh the user list
+
       await fetchUsers();
     } catch (error) {
       console.error("[RENDERER] Error creating user:", error);
