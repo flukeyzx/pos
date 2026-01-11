@@ -1,4 +1,5 @@
 import prisma from "../db.js";
+import ApiError from "../utils/apiError.util.js";
 
 export async function createUser(data) {
   const newUser = await prisma.user.create({
@@ -12,4 +13,22 @@ export async function createUser(data) {
 
 export async function getUsers() {
   return await prisma.user.findMany();
+}
+
+export async function loginService(data) {
+  const user = await prisma.user.findUnique({
+    where: {
+      username: data.username,
+    },
+  });
+
+  if (!user) {
+    throw new ApiError("User not found", 404);
+  }
+
+  if (user.password !== data.password) {
+    throw new ApiError("Invalid password", 401);
+  }
+
+  return user;
 }

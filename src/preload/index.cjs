@@ -8,6 +8,9 @@ const electronAPI = {
     list: () => {
       return ipcRenderer.invoke("user:list");
     },
+    login: (payload) => {
+      return ipcRenderer.invoke("user:login", payload);
+    },
   },
 };
 
