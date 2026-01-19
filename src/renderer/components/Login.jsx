@@ -17,9 +17,12 @@ const Login = ({ onLoginSuccess }) => {
         password,
       });
 
+      console.log(response);
+
       if (response.success) {
-        alert(`Login successful! Welcome ${response.data.username}`);
-        onLoginSuccess(response.data);
+        // response.data has the shape: { accessToken, refreshToken, user: { ... } }
+        alert(`Login successful! Welcome ${response.data.user.username}`);
+        onLoginSuccess(response.data.user);
       } else {
         setError(response.message || "Login failed");
         alert(`Error: ${response.message || "Login failed"}`);

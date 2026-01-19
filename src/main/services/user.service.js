@@ -1,5 +1,9 @@
 import prisma from "../db.js";
 import ApiError from "../utils/apiError.util.js";
+import {
+  createAccessToken,
+  createRefreshToken,
+} from "../utils/authToken.util.js";
 
 export async function createUser(data) {
   const newUser = await prisma.user.create({
@@ -30,5 +34,15 @@ export async function loginService(data) {
     throw new ApiError("Invalid password", 401);
   }
 
-  return user;
+  const accessToken = createAccessToken(user);
+  const refreshToken = createRefreshToken(user);
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      ...user,
+      password: undefined,
+    },
+  };
 }

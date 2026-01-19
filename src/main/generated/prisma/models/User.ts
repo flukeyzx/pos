@@ -28,18 +28,24 @@ export type UserMinAggregateOutputType = {
   id: string | null
   username: string | null
   password: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type UserMaxAggregateOutputType = {
   id: string | null
   username: string | null
   password: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type UserCountAggregateOutputType = {
   id: number
   username: number
   password: number
+  createdAt: number
+  updatedAt: number
   _all: number
 }
 
@@ -48,18 +54,24 @@ export type UserMinAggregateInputType = {
   id?: true
   username?: true
   password?: true
+  createdAt?: true
+  updatedAt?: true
 }
 
 export type UserMaxAggregateInputType = {
   id?: true
   username?: true
   password?: true
+  createdAt?: true
+  updatedAt?: true
 }
 
 export type UserCountAggregateInputType = {
   id?: true
   username?: true
   password?: true
+  createdAt?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -139,6 +151,8 @@ export type UserGroupByOutputType = {
   id: string
   username: string
   password: string
+  createdAt: Date
+  updatedAt: Date
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
@@ -166,12 +180,16 @@ export type UserWhereInput = {
   id?: Prisma.StringFilter<"User"> | string
   username?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
+  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
 }
 
 export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
   password?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -181,12 +199,16 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   password?: Prisma.StringFilter<"User"> | string
+  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
 }, "id" | "username">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
   password?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
@@ -199,70 +221,96 @@ export type UserScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"User"> | string
   username?: Prisma.StringWithAggregatesFilter<"User"> | string
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
 
 export type UserCreateInput = {
   id?: string
   username: string
   password: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type UserUncheckedCreateInput = {
   id?: string
   username: string
   password: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type UserUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserCreateManyInput = {
   id?: string
   username: string
   password: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type UserUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
   password?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
   password?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
   password?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
 
@@ -271,27 +319,35 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   id?: boolean
   username?: boolean
   password?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   username?: boolean
   password?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   username?: boolean
   password?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
   id?: boolean
   username?: boolean
   password?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "password", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
@@ -300,6 +356,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     id: string
     username: string
     password: string
+    createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -726,6 +784,8 @@ export interface UserFieldRefs {
   readonly id: Prisma.FieldRef<"User", 'String'>
   readonly username: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
+  readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }
     
 
@@ -931,7 +991,6 @@ export type UserCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * The data used to create many Users.
    */
   data: Prisma.UserCreateManyInput | Prisma.UserCreateManyInput[]
-  skipDuplicates?: boolean
 }
 
 /**
@@ -950,7 +1009,6 @@ export type UserCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many Users.
    */
   data: Prisma.UserCreateManyInput | Prisma.UserCreateManyInput[]
-  skipDuplicates?: boolean
 }
 
 /**

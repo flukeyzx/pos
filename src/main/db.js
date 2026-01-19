@@ -1,13 +1,12 @@
 import { PrismaClient } from "../main/generated/prisma/client.ts";
 import { config } from "dotenv";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
-const { Pool } = pg;
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import Database from "better-sqlite3";
 
 config();
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
+const sqlite = new Database("dev.db");
+const adapter = new PrismaBetterSqlite3(sqlite);
 
 const globalForPrisma = globalThis;
 

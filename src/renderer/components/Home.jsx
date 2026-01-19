@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Home = ({ user, onLogout }) => {
   const [users, setUsers] = useState([]);
@@ -46,6 +46,10 @@ const Home = ({ user, onLogout }) => {
     }
   };
 
+  useEffect(() => {
+    console.log(user);
+  }, [user]);
+
   return (
     <div style={{ padding: "20px" }}>
       <div
@@ -61,7 +65,7 @@ const Home = ({ user, onLogout }) => {
         <div>
           <h1 style={{ margin: 0, color: "#333" }}>POS Dashboard</h1>
           <p style={{ margin: "0.5rem 0 0 0", color: "#666" }}>
-            Welcome, <strong>{user.username}</strong>!
+            Welcome, <strong>{user?.username || "User"}</strong>!
           </p>
         </div>
         <button

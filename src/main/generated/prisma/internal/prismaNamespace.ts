@@ -508,9 +508,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
  */
 
 export const TransactionIsolationLevel = runtime.makeStrictEnum({
-  ReadUncommitted: 'ReadUncommitted',
-  ReadCommitted: 'ReadCommitted',
-  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 } as const)
 
@@ -520,7 +517,9 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const UserScalarFieldEnum = {
   id: 'id',
   username: 'username',
-  password: 'password'
+  password: 'password',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -532,14 +531,6 @@ export const SortOrder = {
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
-
-
-export const QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
-} as const
-
-export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
 
@@ -556,9 +547,9 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
 
 
 /**
- * Reference to a field of type 'String[]'
+ * Reference to a field of type 'DateTime'
  */
-export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
     
 
 
@@ -566,13 +557,6 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 /**
