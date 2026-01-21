@@ -12,7 +12,7 @@ const Login = ({ onLoginSuccess }) => {
     setError("");
 
     try {
-      const response = await window.electronAPI.user.login({
+      const response = await window.electronAPI.auth.login({
         username,
         password,
       });

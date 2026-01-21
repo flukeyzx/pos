@@ -7,16 +7,41 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in (you could implement session persistence here)
-    setLoading(false);
+    // Check authentication status on app load
+    const checkAuthStatus = async () => {
+      try {
+        const status = await window.electronAPI.auth.status();
+        if (status.isAuthenticated) {
+          // Try to get current user data to verify token is valid
+          try {
+            const userData = await window.electronAPI.api.getCurrentUser();
+            setCurrentUser(userData);
+          } catch (error) {
+            console.log("Token expired, user needs to login again");
+            setCurrentUser(null);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check auth status:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthStatus();
   }, []);
 
   const handleLoginSuccess = (user) => {
     setCurrentUser(user);
   };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
+  const handleLogout = async () => {
+    try {
+      await window.electronAPI.auth.logout();
+      setCurrentUser(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   if (loading) {
