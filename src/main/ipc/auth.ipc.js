@@ -1,38 +1,27 @@
 import { ipcMain } from "electron";
-import { loginService } from "../services/user.service.js";
+import {
+  loginService,
+  getCurrentUser,
+  logout,
+  isAuthenticated,
+} from "../services/auth.service.js";
 import { loginSchema } from "../schemas/auth.schema.js";
 import { ipcHandler } from "./ipcWrapper.js";
-import keytar from "keytar";
-import {
-  setAccessToken,
-  getAccessToken,
-  clearAllTokens,
-} from "../auth/session.js";
 
 export const registerAuthIPC = () => {
   ipcMain.handle(
     "auth:login",
     ipcHandler(async (payload, _event) => {
       const parsed = loginSchema.parse(payload);
-      const res = await loginService(parsed);
-
-      setAccessToken(res.accessToken);
-      await keytar.setPassword(
-        process.env.SERVICE_NAME,
-        "refreshToken",
-        res.refreshToken,
-      );
-
-      return {
-        user: res.user,
-      };
+      const result = await loginService(parsed);
+      return result;
     }),
   );
 
   ipcMain.handle(
     "auth:logout",
     ipcHandler(async () => {
-      await clearAllTokens();
+      logout();
       return { success: true };
     }),
   );
@@ -40,16 +29,17 @@ export const registerAuthIPC = () => {
   ipcMain.handle(
     "auth:status",
     ipcHandler(async () => {
-      const accessToken = getAccessToken();
-      const refreshToken = await keytar.getPassword(
-        process.env.SERVICE_NAME,
-        "refreshToken",
-      );
-
       return {
-        isAuthenticated: !!accessToken,
-        hasRefreshToken: !!refreshToken,
+        isAuthenticated: isAuthenticated(),
+        user: getCurrentUser(),
       };
+    }),
+  );
+
+  ipcMain.handle(
+    "auth:currentUser",
+    ipcHandler(async () => {
+      return getCurrentUser();
     }),
   );
 };

@@ -1,61 +1,46 @@
 import ApiError from "../utils/apiError.util.js";
-import {
-  createAccessToken,
-  createRefreshToken,
-} from "../utils/authToken.util.js";
 import prisma from "../db.js";
+import bcrypt from "bcrypt";
+import { clearSession, getSession, setSession } from "../auth/session.js";
 
 export async function loginService(data) {
+  const { username, password } = data;
+
   const user = await prisma.user.findUnique({
-    where: {
-      username: data.username,
-    },
+    where: { username },
   });
 
   if (!user) {
     throw new ApiError("User not found", 404);
   }
 
-  if (user.password !== data.password) {
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
     throw new ApiError("Invalid password", 401);
   }
 
-  const accessToken = createAccessToken(user);
-  const refreshToken = createRefreshToken(user);
+  const session = {
+    id: user.id,
+    username: user.username,
+  };
+
+  await setSession(session);
 
   return {
-    accessToken,
-    refreshToken,
-    user: {
-      ...user,
-      password: undefined,
-    },
+    success: true,
+    message: "User logged in successfully.",
+    user: getSession(),
   };
 }
 
-export async function refreshTokenService(refreshToken) {
-  try {
-    const jwt = (await import("jsonwebtoken")).default;
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+export function getCurrentUser() {
+  return getSession();
+}
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-    });
+export function logout() {
+  clearSession();
+}
 
-    if (!user) {
-      throw new ApiError("User not found", 404);
-    }
-
-    const newAccessToken = createAccessToken(user);
-
-    return { accessToken: newAccessToken };
-  } catch (error) {
-    if (
-      error.name === "JsonWebTokenError" ||
-      error.name === "TokenExpiredError"
-    ) {
-      throw new ApiError("Invalid or expired refresh token", 401);
-    }
-    throw error;
-  }
+export function isAuthenticated() {
+  return getSession() !== null;
 }

@@ -12,14 +12,7 @@ const App = () => {
       try {
         const status = await window.electronAPI.auth.status();
         if (status.isAuthenticated) {
-          // Try to get current user data to verify token is valid
-          try {
-            const userData = await window.electronAPI.api.getCurrentUser();
-            setCurrentUser(userData);
-          } catch (error) {
-            console.log("Token expired, user needs to login again");
-            setCurrentUser(null);
-          }
+          setCurrentUser(status.user);
         }
       } catch (error) {
         console.error("Failed to check auth status:", error);

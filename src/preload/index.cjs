@@ -19,13 +19,8 @@ const electronAPI = {
     status: () => {
       return ipcRenderer.invoke("auth:status");
     },
-  },
-  api: {
-    getCurrentUser: () => {
-      return ipcRenderer.invoke("api:getCurrentUser");
-    },
-    request: (endpoint, options) => {
-      return ipcRenderer.invoke("api:request", { endpoint, options });
+    currentUser: () => {
+      return ipcRenderer.invoke("auth:currentUser");
     },
   },
 };
