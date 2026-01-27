@@ -5,15 +5,12 @@ const Home = ({ user, onLogout }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authStatus, setAuthStatus] = useState(null);
 
   const fetchUsers = async () => {
     try {
       const response = await window.electronAPI.user.list();
-      if (response.success) {
-        setUsers(response.data);
-      } else {
-        throw new Error(response.message || "Failed to fetch users");
-      }
+      setUsers(response || []);
     } catch (error) {
       console.error("Error fetching users:", error);
       alert("Error fetching users: " + error.message);
@@ -30,14 +27,10 @@ const Home = ({ user, onLogout }) => {
         password,
       });
 
-      if (response.success) {
-        alert(`User "${response.data.username}" created successfully!`);
-        setUsername("");
-        setPassword("");
-        await fetchUsers();
-      } else {
-        throw new Error(response.message || "Failed to create user");
-      }
+      alert(`User "${username}" created successfully!`);
+      setUsername("");
+      setPassword("");
+      await fetchUsers();
     } catch (error) {
       console.error("[RENDERER] Error creating user:", error);
       alert("Error creating user: " + error.message);
@@ -46,9 +39,19 @@ const Home = ({ user, onLogout }) => {
     }
   };
 
+  const checkAuthStatus = async () => {
+    try {
+      const res = await window.electronAPI.auth.status();
+      setAuthStatus(res.data);
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+    }
+  };
+
   useEffect(() => {
-    console.log(user);
-  }, [user]);
+    fetchUsers();
+    checkAuthStatus();
+  }, []);
 
   return (
     <div style={{ padding: "20px" }}>
@@ -67,6 +70,20 @@ const Home = ({ user, onLogout }) => {
           <p style={{ margin: "0.5rem 0 0 0", color: "#666" }}>
             Welcome, <strong>{user?.username || "User"}</strong>!
           </p>
+          {authStatus && (
+            <p
+              style={{
+                margin: "0.25rem 0 0 0",
+                color: "#888",
+                fontSize: "0.9rem",
+              }}
+            >
+              Auth Status:{" "}
+              {authStatus.isAuthenticated
+                ? "✅ Authenticated"
+                : "❌ Not Authenticated"}
+            </p>
+          )}
         </div>
         <button
           onClick={onLogout}

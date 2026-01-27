@@ -17,15 +17,15 @@ const Login = ({ onLoginSuccess }) => {
         password,
       });
 
-      console.log(response);
+      console.log("Login response:", response);
 
-      if (response.success) {
-        // response.data has the shape: { accessToken, refreshToken, user: { ... } }
+      // Check if response contains user data (successful login)
+      if (response.data.user) {
         alert(`Login successful! Welcome ${response.data.user.username}`);
         onLoginSuccess(response.data.user);
       } else {
-        setError(response.message || "Login failed");
-        alert(`Error: ${response.message || "Login failed"}`);
+        setError("Login failed - no user data received");
+        alert("Error: Login failed - no user data received");
       }
     } catch (error) {
       setError(error.message || "Login failed");
