@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ThemeProvider } from "./context/theme-context";
 import Login from "./components/Login.jsx";
 import Home from "./components/Home.jsx";
 
@@ -39,24 +40,22 @@ const App = () => {
 
   if (loading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        <div>Loading...</div>
-      </div>
+      <ThemeProvider defaultTheme="light" storageKey="pos-ui-theme">
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-foreground">Loading...</div>
+        </div>
+      </ThemeProvider>
     );
   }
 
-  return currentUser ? (
-    <Home user={currentUser} onLogout={handleLogout} />
-  ) : (
-    <Login onLoginSuccess={handleLoginSuccess} />
+  return (
+    <ThemeProvider defaultTheme="light" storageKey="pos-ui-theme">
+      {currentUser ? (
+        <Home user={currentUser} onLogout={handleLogout} />
+      ) : (
+        <Login onLoginSuccess={handleLoginSuccess} />
+      )}
+    </ThemeProvider>
   );
 };
 
