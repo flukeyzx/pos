@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/auth-context";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -10,38 +12,24 @@ import {
   CardTitle,
 } from "./ui/card";
 
-const Login = ({ onLoginSuccess }) => {
+const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { login, loginLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
     try {
-      const response = await window.electronAPI.auth.login({
-        username,
-        password,
-      });
-
-      console.log("Login response:", response);
-
-      // Check if response contains user data (successful login)
-      if (response.data.user) {
-        alert(`Login successful! Welcome ${response.data.user.username}`);
-        onLoginSuccess(response.data.user);
-      } else {
-        setError("Login failed - no user data received");
-        alert("Error: Login failed - no user data received");
-      }
+      const result = await login({ username, password });
+      alert(`Login successful! Welcome ${result.user.username}`);
+      navigate("/dashboard");
     } catch (error) {
-      setError(error.message || "Login failed");
-      alert(`Error: ${error.message || "Login failed"}`);
-    } finally {
-      setLoading(false);
+      setError(error.message);
+      alert(`Error: ${error.message}`);
     }
   };
 
@@ -67,7 +55,7 @@ const Login = ({ onLoginSuccess }) => {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 placeholder="Enter your username"
-                disabled={loading}
+                disabled={loginLoading}
               />
             </div>
             <div className="space-y-2">
@@ -79,7 +67,7 @@ const Login = ({ onLoginSuccess }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Enter your password"
-                disabled={loading}
+                disabled={loginLoading}
               />
             </div>
             {error && (
@@ -87,8 +75,8 @@ const Login = ({ onLoginSuccess }) => {
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+            <Button type="submit" className="w-full" disabled={loginLoading}>
+              {loginLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
         </CardContent>

@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../context/auth-context";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -11,71 +14,63 @@ import {
 } from "./ui/card";
 import { ThemeToggle } from "./ui/theme-toggle";
 
-const Home = ({ user, onLogout }) => {
-  const [users, setUsers] = useState([]);
+const Home = () => {
+  const { user, logout, logoutLoading } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [authStatus, setAuthStatus] = useState(null);
 
-  const fetchUsers = async () => {
-    try {
+  const {
+    data: users = [],
+    isLoading: usersLoading,
+    refetch: refetchUsers,
+  } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
       const response = await window.electronAPI.user.list();
-      setUsers(response || []);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      alert("Error fetching users: " + error.message);
-    }
-  };
+      return response || [];
+    },
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (userData) => {
+      const response = await window.electronAPI.user.create(userData);
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setUsername("");
+      setPassword("");
+      alert(`User "${username}" created successfully!`);
+    },
+    onError: (error) => {
+      console.error("[RENDERER] Error creating user:", error);
+      alert("Error creating user: " + error.message);
+    },
+  });
+
+  const { data: authStatus } = useQuery({
+    queryKey: ["auth", "status"],
+    queryFn: async () => {
+      const status = await window.electronAPI.auth.status();
+      return status;
+    },
+  });
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await window.electronAPI.user.create({
-        username,
-        password,
-      });
-
-      alert(`User "${username}" created successfully!`);
-      setUsername("");
-      setPassword("");
-      await fetchUsers();
-    } catch (error) {
-      console.error("[RENDERER] Error creating user:", error);
-      alert("Error creating user: " + error.message);
-    } finally {
-      setLoading(false);
-    }
+    await createUserMutation.mutateAsync({ username, password });
   };
 
-  const checkAuthStatus = async () => {
+  const handleLogout = async () => {
     try {
-      const status = await window.electronAPI.auth.status();
-      setAuthStatus(status);
+      await logout();
+      navigate("/login");
     } catch (error) {
-      console.error("Error checking auth status:", error);
+      console.error("Logout failed:", error);
     }
   };
-
-  const checkPermissions = async () => {
-    try {
-      const canCreateUsers =
-        await window.electronAPI.auth.hasPermission("user:create");
-      const isAdmin = await window.electronAPI.auth.hasRole("admin");
-      console.log("Can create users:", canCreateUsers);
-      console.log("Is admin:", isAdmin);
-    } catch (error) {
-      console.error("Error checking permissions:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-    checkAuthStatus();
-    checkPermissions();
-  }, []);
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -101,8 +96,12 @@ const Home = ({ user, onLogout }) => {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="destructive" onClick={onLogout}>
-              Logout
+            <Button
+              variant="destructive"
+              onClick={handleLogout}
+              disabled={logoutLoading}
+            >
+              {logoutLoading ? "Logging out..." : "Logout"}
             </Button>
           </div>
         </div>
@@ -126,7 +125,7 @@ const Home = ({ user, onLogout }) => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
-                    disabled={loading}
+                    disabled={createUserMutation.isPending}
                   />
                 </div>
                 <div className="space-y-2">
@@ -138,11 +137,15 @@ const Home = ({ user, onLogout }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    disabled={loading}
+                    disabled={createUserMutation.isPending}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creating..." : "Create User"}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={createUserMutation.isPending}
+                >
+                  {createUserMutation.isPending ? "Creating..." : "Create User"}
                 </Button>
               </form>
             </CardContent>
@@ -156,8 +159,12 @@ const Home = ({ user, onLogout }) => {
                   <CardTitle>Users List</CardTitle>
                   <CardDescription>Manage existing users</CardDescription>
                 </div>
-                <Button variant="outline" onClick={fetchUsers}>
-                  Refresh
+                <Button
+                  variant="outline"
+                  onClick={refetchUsers}
+                  disabled={usersLoading}
+                >
+                  {usersLoading ? "Refreshing..." : "Refresh"}
                 </Button>
               </div>
             </CardHeader>
