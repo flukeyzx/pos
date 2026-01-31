@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export function createMainWindow() {
+export async function createMainWindow() {
   const preloadPath = path.join(__dirname, "../preload/index.cjs");
 
   const win = new BrowserWindow({
@@ -15,15 +15,16 @@ export function createMainWindow() {
       preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
+      backgroundThrottling: false,
     },
   });
 
-  win.loadURL("http://localhost:5173");
+  await win.loadURL("http://localhost:5173");
 
   // Open DevTools in development
-  if (process.env.NODE_ENV !== "production") {
-    win.webContents.openDevTools();
-  }
+  // if (process.env.NODE_ENV !== "production") {
+  //   win.webContents.openDevTools();
+  // }
 
   return win;
 }

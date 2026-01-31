@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const AuthContext = createContext({
   user: null,
-  loading: false,
   login: async () => {},
   logout: async () => {},
   isAuthenticated: false,

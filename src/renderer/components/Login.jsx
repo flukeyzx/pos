@@ -24,12 +24,10 @@ const Login = () => {
     setError("");
 
     try {
-      const result = await login({ username, password });
-      alert(`Login successful! Welcome ${result.user.username}`);
+      await login({ username, password });
       navigate("/dashboard");
     } catch (error) {
       setError(error.message);
-      alert(`Error: ${error.message}`);
     }
   };
 
