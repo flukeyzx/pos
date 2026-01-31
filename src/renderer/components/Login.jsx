@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/auth-context";
+import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -24,10 +25,12 @@ const Login = () => {
     setError("");
 
     try {
-      await login({ username, password });
+      const result = await login({ username, password });
+      toast.success(`Welcome back, ${result.user.username}!`);
       navigate("/dashboard");
     } catch (error) {
       setError(error.message);
+      toast.error(error.message);
     }
   };
 

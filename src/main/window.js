@@ -21,10 +21,9 @@ export async function createMainWindow() {
 
   await win.loadURL("http://localhost:5173");
 
-  // Open DevTools in development
-  // if (process.env.NODE_ENV !== "production") {
-  //   win.webContents.openDevTools();
-  // }
+  if (process.env.NODE_ENV !== "production") {
+    win.webContents.openDevTools();
+  }
 
   return win;
 }
