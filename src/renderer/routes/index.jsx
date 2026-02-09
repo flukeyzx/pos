@@ -4,6 +4,7 @@ import ProtectedRoute from "./ProtectedRoute.jsx";
 import Dashboard from "../pages/dashboard/Dashboard.jsx";
 import Home from "../components/Home.jsx";
 import AddProduct from "../pages/dashboard/inventory/product/AddProduct.jsx";
+import CreateSaleInvoice from "../pages/dashboard/invoice/sale/CreateSaleInvoice.jsx";
 
 export const routes = [
   {
@@ -23,6 +24,7 @@ export const routes = [
         children: [
           { index: true, element: <Home /> },
           { path: "product/add", element: <AddProduct /> },
+          { path: "invoice/sale/create", element: <CreateSaleInvoice /> },
         ],
       },
     ],

@@ -39,7 +39,7 @@ const menuItems = [
         id: "sale-invoice",
         label: "Sale Invoice",
         icon: Receipt,
-        path: "/dashboard/invoice/sale",
+        path: "/dashboard/invoice/sale/create",
       },
     ],
   },
@@ -90,7 +90,7 @@ const Sidebar = ({ className }) => {
   return (
     <aside
       className={cn(
-        "w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col",
+        "w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col overflow-y-auto",
         className,
       )}
     >
@@ -162,7 +162,7 @@ const Sidebar = ({ className }) => {
                               className={cn(
                                 "cursor-pointer w-full flex items-center gap-3 px-3 py-2 rounded-lg",
                                 "text-sm transition-all duration-200",
-                                "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                "hover:text-secondary",
                                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                                 subActive && "text-secondary",
                                 !subActive && "text-sidebar-foreground/80",
