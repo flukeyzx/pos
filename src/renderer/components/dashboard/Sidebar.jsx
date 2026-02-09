@@ -26,7 +26,7 @@ const menuItems = [
         id: "add-product",
         label: "Add Product",
         icon: PlusCircle,
-        path: "/dashboard/inventory/add-product",
+        path: "/dashboard/product/add",
       },
     ],
   },
@@ -56,6 +56,7 @@ const Sidebar = ({ className }) => {
     if (!item.subItems) return false;
     return item.subItems.some((subItem) => location.pathname === subItem.path);
   };
+
   useEffect(() => {
     menuItems.forEach((item) => {
       if (
@@ -95,7 +96,7 @@ const Sidebar = ({ className }) => {
     >
       <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+          <div className="w-10 h-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">
               POS
             </span>
@@ -119,12 +120,11 @@ const Sidebar = ({ className }) => {
                 <button
                   onClick={() => handleItemClick(item)}
                   className={cn(
-                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg",
+                    "cursor-pointer w-full flex items-center justify-between px-3 py-2.5 rounded-lg",
                     "text-sm font-medium transition-all duration-200",
                     "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     "focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-                    active && !hasSubItems && "active-item",
-                    active && hasSubItems && "text-sidebar-primary",
+                    active && "active-item",
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -160,13 +160,12 @@ const Sidebar = ({ className }) => {
                             <button
                               onClick={() => navigate(subItem.path)}
                               className={cn(
-                                "w-full flex items-center gap-3 px-3 py-2 rounded-lg",
+                                "cursor-pointer w-full flex items-center gap-3 px-3 py-2 rounded-lg",
                                 "text-sm transition-all duration-200",
                                 "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-                                subActive
-                                  ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
-                                  : "text-sidebar-foreground/80",
+                                subActive && "text-secondary",
+                                !subActive && "text-sidebar-foreground/80",
                               )}
                             >
                               <SubIcon className="w-4 h-4" />
