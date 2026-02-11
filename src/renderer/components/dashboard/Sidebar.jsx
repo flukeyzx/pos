@@ -4,9 +4,11 @@ import {
   Package,
   FileText,
   ChevronDown,
+  ChevronLeft,
   PlusCircle,
   Receipt,
   Home,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/renderer/lib/utils";
 
@@ -47,6 +49,7 @@ const menuItems = [
 
 const Sidebar = ({ className }) => {
   const [expandedItems, setExpandedItems] = useState([]);
+  const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -80,32 +83,62 @@ const Sidebar = ({ className }) => {
   const isExpanded = (itemId) => expandedItems.includes(itemId);
 
   const handleItemClick = (item) => {
-    if (item.path && !item.subItems) {
-      navigate(item.path);
-    } else if (item.subItems) {
+    if (item.subItems) {
+      if (collapsed) {
+        setCollapsed(false);
+        setExpandedItems((prev) =>
+          prev.includes(item.id) ? prev : [...prev, item.id],
+        );
+        return;
+      }
       toggleExpand(item.id);
+      return;
+    }
+
+    if (item.path) {
+      navigate(item.path);
     }
   };
 
   return (
     <aside
       className={cn(
-        "w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col overflow-y-auto",
+        "bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col overflow-y-auto transition-all duration-200",
+        collapsed ? "w-16" : "w-64",
         className,
       )}
     >
-      <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-8 rounded-lg bg-primary flex items-center justify-center">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
+      {!collapsed && (
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="w-10 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
             <span className="text-primary-foreground font-bold text-sm">
               POS
             </span>
           </div>
-          <span className="font-semibold text-lg">Dashboard</span>
+         
+            <span className="font-semibold text-lg whitespace-nowrap">
+              Dashboard
+            </span>
         </div>
+          )}
+        <button
+          type="button"
+          onClick={() => setCollapsed((prev) => !prev)}
+          className="cursor-pointer inline-flex h-7 w-7 items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <div>
+              <Menu className="h-5 w-5 justify-center" />
+            </div>
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
+        </button>
       </div>
 
-      <nav className="flex-1 py-4 px-3 overflow-y-auto">
+      <nav className="flex-1 py-4 px-2 overflow-y-auto">
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -124,14 +157,21 @@ const Sidebar = ({ className }) => {
                     "text-sm font-medium transition-all duration-200",
                     "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     "focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-                    active && "active-item",
+                    active && !collapsed && "active-item",
+                    collapsed && "justify-center bg-popover",
+                    active && collapsed && "bg-muted text-secondary",
                   )}
                 >
-                  <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex items-center gap-3",
+                      collapsed && "justify-center",
+                    )}
+                  >
                     <Icon className="w-5 h-5" />
-                    <span>{item.label}</span>
+                    {!collapsed && <span>{item.label}</span>}
                   </div>
-                  {hasSubItems && (
+                  {hasSubItems && !collapsed && (
                     <div
                       className={cn(
                         "transition-transform duration-200",
@@ -143,7 +183,7 @@ const Sidebar = ({ className }) => {
                   )}
                 </button>
 
-                {hasSubItems && (
+                {hasSubItems && !collapsed && (
                   <div
                     className={cn(
                       "overflow-hidden transition-all duration-200 ease-in-out",
@@ -183,11 +223,13 @@ const Sidebar = ({ className }) => {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border">
-        <p className="text-xs text-sidebar-foreground/50 text-center">
-          © 2026 POS System
-        </p>
-      </div>
+      {!collapsed && (
+        <div className="p-4 border-t border-sidebar-border">
+          <p className="text-xs text-sidebar-foreground/50 text-center">
+            © 2026 POS System
+          </p>
+        </div>
+      )}
     </aside>
   );
 };
