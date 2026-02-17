@@ -17,65 +17,61 @@ model User {
 }
 
 model Category {
-  id String @id @default(uuid())
-  name String
-  code String? @unique
+  id          String  @id @default(uuid())
+  name        String
+  code        String? @unique
   description String?
 
-  isActive Boolean @default(true)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  products Product[]
 }
 
 model Brand {
-  id String @id @default(uuid())
-  name String
-  code String? @unique
+  id          String  @id @default(uuid())
+  name        String
+  code        String? @unique
   description String?
-  logo String?
+  logo        String?
 
-  isActive Boolean @default(true)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  products Product[]
 }
 
 enum ProductStatus {
   ACTIVE
   INACTIVE
 }
-
-enum StockMoveType {
-  PURCHASE      // stock coming in from supplier
-  SALE          // stock going out to customer
-  RETURN        // customer or supplier returns
-  ADJUSTMENT    // manual correction / stocktake
-  TRANSFER      // between locations (future use)
-  OPENING       // initial stock balance
-}
-
+TODO: complete this schema add tags and other fields
 model Product {
-  id   String @id @default(uuid())
-  name String
-  sku  String @unique
+  id    String  @id @default(uuid())
+  name  String
+  sku   String  @unique
   image String?
 
   status ProductStatus
-  tags   String[]
 
-  /// Base/global unit this product uses for stock (e.g. KG, L, PC)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  brandId String?
+  brand   Brand?  @relation(fields: [brandId], references: [id])
+
   baseGlobalUomId String?
   baseGlobalUom   GlobalUom? @relation(fields: [baseGlobalUomId], references: [id])
 
-  /// Alert thresholds (in minimal base units), actual stock is derived from StockMove
   minStockLevel Int?
   maxStockLevel Int?
 
   trackInventory Boolean @default(true)
 
-  /// Available UOMs for this product (each with its own price / discount / barcode)
   productUoms ProductUom[]
 
-  /// Batches and stock movements
   batches    Batch[]
   stockMoves StockMove[]
 
@@ -83,53 +79,52 @@ model Product {
   updatedAt DateTime @updatedAt
 }
 
-/// Global UOM table maintained centrally (e.g. KG, G, L, ML, PC)
-model GlobalUom {
-  id     String @id @default(uuid())
-  name   String
-  code   String @unique // e.g. "KG"
-  symbol String?        // e.g. "kg"
+enum UomDimension {
+  WEIGHT_STD
+}
 
-  /// Minimal base unit code for this dimension (e.g. "G" for KG, "ML" for L)
-  baseCode     String
-  isBase       Boolean @default(false)
-  /// Factor to convert *this* UOM into its minimal base unit
-  /// e.g. 1 KG = 1000 G => factorToBase = 1000
+model GlobalUom {
+  id        String @id @default(uuid())
+  name      String
+  code      String @unique
+  dimension String
+
   factorToBase Decimal
+  precision    Int     @default(0)
+
+  rootUomId String?
+  rootUom   GlobalUom?  @relation("UomHierarchy", fields: [rootUomId], references: [id])
+  children  GlobalUom[] @relation("UomHierarchy")
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// Relations
   products Product[]
   uoms     Uom[]
+
+  @@index([dimension])
+  @@index([rootUomId])
 }
 
-/// User-defined / custom packaging UOMs tied to a global base UOM
-/// Example: "BOX-12" with base "PC" and conversionFactorToBase = 12
 model Uom {
-  id   String @id @default(uuid())
+  id   String  @id @default(uuid())
   name String
-  code String @unique
-  description String?
+  code String? @unique
 
-  /// Link to global base UOM (e.g. base "PC" for a box of pieces)
   globalBaseUomId String
   globalBaseUom   GlobalUom @relation(fields: [globalBaseUomId], references: [id])
 
-  /// Factor to convert this UOM into the global base minimal unit
-  /// e.g. 1 BOX-12 = 12 PC => conversionFactorToBase = 12
-  conversionFactorToBase Decimal
+  defaultConversionFactor Decimal
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   productUoms ProductUom[]
+  batches     Batch[]
 }
 
-/// Junction table binding Product to UOM with per-UOM pricing / discount / barcode
 model ProductUom {
   id String @id @default(uuid())
 
@@ -137,44 +132,38 @@ model ProductUom {
   product   Product @relation(fields: [productId], references: [id])
 
   uomId String
-  uom   Uom @relation(fields: [uomId], references: [id])
+  uom   Uom    @relation(fields: [uomId], references: [id])
 
-  /// Snapshot of the conversion factor relative to the product's base UOM
-  /// e.g. if product base is KG and this UOM is "BOX-5KG", this could be 5
-  conversionFactorToBase Decimal
+  conversionFactor Decimal
 
-  /// Pricing & barcode specific to this product+UOM
-  sellingPrice    Decimal
-  purchasePrice   Decimal?
-  discountPercent Decimal @default(0)
-  barcode         String? @unique
+  salePrice     Decimal?
+  purchasePrice Decimal?
+  discountRate  Decimal  @default(0)
+  barcode       String?  @unique
 
-  /// Flags for convenience
   isDefaultSalesUom    Boolean @default(false)
   isDefaultPurchaseUom Boolean @default(false)
 
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  stockMoves StockMove[]
 
   @@unique([productId, uomId])
 }
 
-/// Batch / lot for a product, with cost and optional expiry.
-/// Quantity per batch is derived from StockMove entries for this batch.
 model Batch {
   id String @id @default(uuid())
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
-  /// Human-readable batch / lot number from supplier
   code String
 
-  /// Cost price per minimal base unit for this batch (or per base UOM, as you decide)
-  costPrice Decimal
+  costPrice      Decimal
+  referenceUomId String
+  uom            Uom     @relation(fields: [referenceUomId], references: [id])
 
-  /// Optional expiry date for perishable products
   expiryDate DateTime?
 
   isActive  Boolean  @default(true)
@@ -186,30 +175,32 @@ model Batch {
   @@unique([productId, code])
 }
 
-/// Every stock movement (purchase, sale, return, adjustment, etc.)
-/// Actual on-hand stock = sum of quantityBase over all moves for a product.
+enum StockMoveType {
+  PURCHASE
+  SALE
+  SALE_RETURN
+  PURCHASE_RETURN
+  ADJUSTMENT
+  TRANSFER
+  OPENING
+}
+
 model StockMove {
   id String @id @default(uuid())
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
-  /// Optional: the specific product UOM used in the transaction (e.g. BOX-12)
   productUomId String?
   productUom   ProductUom? @relation(fields: [productUomId], references: [id])
 
-  /// Optional batch this movement belongs to
   batchId String?
-  batch   Batch? @relation(fields: [batchId], references: [id])
+  batch   Batch?  @relation(fields: [batchId], references: [id])
 
   type StockMoveType
 
-  /// Quantity in minimal base units (derived from baseGlobalUom)
-  /// Positive for inbound (purchase, return in, adjustment up),
-  /// negative for outbound (sale, return out, adjustment down).
   quantityBase Int
 
-  /// Optional reference to external docs (invoice no, adjustment ref, etc.)
   reference String?
   note      String?
 
