@@ -21,7 +21,7 @@ const AppRoutes = () => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="pos-ui-theme">
+      <ThemeProvider defaultTheme="main" defaultMode="light" storageKey="pos-ui-theme">
         <AuthProvider>
           <Router>
             <AppRoutes />

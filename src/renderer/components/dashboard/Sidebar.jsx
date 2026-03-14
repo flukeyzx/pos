@@ -9,6 +9,7 @@ import {
   Receipt,
   Home,
   Menu,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/renderer/lib/utils";
 
@@ -44,6 +45,12 @@ const menuItems = [
         path: "/dashboard/invoice/sale/create",
       },
     ],
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: SettingsIcon,
+    path: "/dashboard/settings",
   },
 ];
 

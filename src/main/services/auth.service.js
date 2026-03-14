@@ -20,7 +20,7 @@ export async function loginService(data) {
   // const isValidPassword = await bcrypt.compare(password, user.password);
 
   // if (!isValidPassword) {
-  //   throw new ApiError("Invalid password", 401);
+  //   throw new ApiError("Invalid credentials", 401);
   // }
 
   const session = {
@@ -32,19 +32,20 @@ export async function loginService(data) {
 
   return {
     success: true,
-    message: "User logged in successfully.",
+    message: "Login successful",
     user: getSession(),
   };
 }
 
-export function getCurrentUser() {
+export function getCurrentUserService() {
   return getSession();
 }
 
-export function logout() {
+export async function logoutService() {
   clearSession();
+  return { success: true };
 }
 
-export function isAuthenticated() {
+export function isAuthenticatedService() {
   return getSession() !== null;
 }

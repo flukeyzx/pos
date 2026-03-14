@@ -1,45 +1,43 @@
 import { ipcMain } from "electron";
 import {
   loginService,
-  getCurrentUser,
-  logout,
-  isAuthenticated,
+  logoutService,
+  getCurrentUserService,
+  isAuthenticatedService,
 } from "../services/auth.service.js";
 import { loginSchema } from "../schemas/auth.schema.js";
 import { ipcHandler } from "./ipcWrapper.js";
 
-export const registerAuthIPC = () => {
+export function registerAuthIPC() {
   ipcMain.handle(
     "auth:login",
-    ipcHandler(async (payload, _event) => {
-      const parsed = loginSchema.parse(payload);
-      const result = await loginService(parsed);
-      return result;
-    }),
+    ipcHandler(async (payload) => {
+      const validatedData = loginSchema.parse(payload);
+      return await loginService(validatedData);
+    })
   );
 
   ipcMain.handle(
     "auth:logout",
     ipcHandler(async () => {
-      logout();
-      return { success: true };
-    }),
+      return await logoutService();
+    })
   );
 
   ipcMain.handle(
     "auth:status",
     ipcHandler(async () => {
       return {
-        isAuthenticated: isAuthenticated(),
-        user: getCurrentUser(),
+        isAuthenticated: isAuthenticatedService(),
+        user: getCurrentUserService(),
       };
-    }),
+    })
   );
 
   ipcMain.handle(
     "auth:currentUser",
     ipcHandler(async () => {
-      return getCurrentUser();
-    }),
+      return await getCurrentUserService();
+    })
   );
-};
+}
