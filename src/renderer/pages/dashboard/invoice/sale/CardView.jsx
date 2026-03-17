@@ -1,5 +1,14 @@
-import { useMemo } from "react";
-import { Search, ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Search,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
+  X,
+  Grid3X3,
+  List,
+} from "lucide-react";
 import { Button } from "@/renderer/components/ui/button";
 import { Input } from "@/renderer/components/ui/input";
 import { Label } from "@/renderer/components/ui/label";
@@ -23,10 +32,17 @@ import {
   formatCurrency,
   filterProducts,
   getStockStatus,
+  useInfiniteCustomers,
+  uomOptions,
+  paymentModes,
 } from "./sale-data";
+import { SearchableSelect } from "@/renderer/components/common/SearchableSelect";
 
-function CardView() {
+function CardView({ viewMode, setViewMode }) {
   const { state, activeOrder, actions } = useCardViewReducer();
+  const customerQuery = useInfiniteCustomers({});
+
+  const [paymentMode, setPaymentMode] = useState("cash");
 
   const filteredProducts = useMemo(
     () =>
@@ -39,10 +55,15 @@ function CardView() {
     [activeOrder.items],
   );
 
+  const handleClearCart = () => {
+    setPaymentMode("cash");
+    actions.clearOrder();
+  };
+
   return (
     <div className="flex h-full gap-2">
       {/* Left Side - Products */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 m-2">
         {/* Row 1: Orders */}
         <div className="flex items-center gap-2 mb-2 shrink-0">
           {/* Orders - Scrollable */}
@@ -84,6 +105,26 @@ function CardView() {
             <Plus className="w-4 h-4 mr-1" />
             New
           </Button>
+
+          {/* View Toggle */}
+          <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5 shrink-0">
+            <Button
+              variant={viewMode === "card" ? "default" : "ghost"}
+              size="sm"
+              className="h-7 px-2"
+              onClick={() => setViewMode("card")}
+            >
+              <Grid3X3 className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "table" ? "default" : "ghost"}
+              size="sm"
+              className="h-7 px-2"
+              onClick={() => setViewMode("table")}
+            >
+              <List className="w-3.5 h-3.5" />
+            </Button>
+          </div>
         </div>
 
         {/* Category Bar */}
@@ -178,25 +219,18 @@ function CardView() {
           <Label className="text-xs text-muted-foreground mb-1 block">
             Customer
           </Label>
-          <Select
-            value={activeOrder.customer?.id || "1"}
+          <SearchableSelect
+            value={activeOrder.customer?.id || null}
             onValueChange={(val) => actions.setCustomer(val)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {mockCustomers.map((customer) => (
-                <SelectItem key={customer.id} value={customer.id}>
-                  <div className="font-medium">{customer.name}</div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Select customer"
+            fetchFn={useInfiniteCustomers}
+            labelKey="name"
+            valueKey="id"
+          />
         </div>
 
         {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
+        <div className="flex-1 overflow-y-auto p-2 space-y-2">
           {activeOrder.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
               <ShoppingCart className="w-8 h-8 mb-1 opacity-20" />
@@ -204,76 +238,65 @@ function CardView() {
             </div>
           ) : (
             activeOrder.items.map((item) => (
-              <div
+              <CartItem
                 key={item.id}
-                className="flex gap-2 p-1.5 rounded-md bg-muted/50"
-              >
-                <div className="text-lg">{item.image}</div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-xs truncate">{item.name}</h4>
-                  <p className="text-[10px] text-muted-foreground">
-                    {formatCurrency(item.price)}
-                  </p>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-5 w-5"
-                      onClick={() => actions.decrementItem(item.id)}
-                    >
-                      <Minus className="w-2.5 h-2.5" />
-                    </Button>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) =>
-                        actions.updateItem(item.id, "quantity", e.target.value)
-                      }
-                      className="w-10 h-5 text-center text-xs"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-5 w-5"
-                      onClick={() => actions.incrementItem(item.id)}
-                    >
-                      <Plus className="w-2.5 h-2.5" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end justify-between">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5 text-destructive"
-                    onClick={() => actions.removeItem(item.id)}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                  <span className="font-bold text-xs">
-                    {formatCurrency(item.price * item.quantity)}
-                  </span>
-                </div>
-              </div>
+                item={item}
+                actions={actions}
+                formatCurrency={formatCurrency}
+              />
             ))
           )}
         </div>
 
         {/* Cart Summary */}
-        <div className="p-2 border-t bg-muted/30 space-y-0.5 shrink-0">
-          <div className="flex justify-between text-xs">
+        <div className="p-2 border-t bg-muted/30 space-y-1 shrink-0 mx-2">
+          {/* Payment Mode - on top */}
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-muted-foreground">Payment</span>
+            <Select value={paymentMode} onValueChange={setPaymentMode}>
+              <SelectTrigger className="h-8 w-28 text-xs py-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {paymentModes.map((mode) => (
+                  <SelectItem key={mode.id} value={mode.id} className="text-xs">
+                    {mode.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Subtotal */}
+          <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span>{formatCurrency(totals.subTotal)}</span>
+            <span className="font-medium">
+              {formatCurrency(totals.subTotal)}
+            </span>
           </div>
-          <div className="flex justify-between text-xs">
+
+          {/* Discount from products */}
+          {totals.discount > 0 && (
+            <div className="flex justify-between text-sm text-destructive">
+              <span className="text-muted-foreground">Discount</span>
+              <span>-{formatCurrency(totals.discount)}</span>
+            </div>
+          )}
+
+          {/* Tax */}
+          <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Tax (18%)</span>
-            <span>{formatCurrency(totals.taxTotal)}</span>
+            <span className="font-medium">
+              {formatCurrency(totals.taxTotal)}
+            </span>
           </div>
+
           <Separator className="my-1" />
-          <div className="flex justify-between font-bold text-sm">
+
+          {/* Grand Total */}
+          <div className="flex justify-between font-bold">
             <span>Total</span>
-            <span className="text-base">
+            <span className="text-base text-primary">
               {formatCurrency(totals.grandTotal)}
             </span>
           </div>
@@ -284,12 +307,116 @@ function CardView() {
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => actions.clearOrder()}
+            onClick={handleClearCart}
           >
             Cancel
           </Button>
           <Button className="flex-1" disabled={activeOrder.items.length === 0}>
             Complete
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CartItem({ item, actions, formatCurrency }) {
+  const [localQty, setLocalQty] = useState(item.quantity.toString());
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setLocalQty(val);
+  };
+
+  const handleBlur = () => {
+    const num = parseInt(localQty, 10);
+    if (!localQty || isNaN(num) || num < 1) {
+      setLocalQty("1");
+      actions.updateItem(item.id, "quantity", "1");
+    } else {
+      setLocalQty(num.toString());
+      actions.updateItem(item.id, "quantity", num.toString());
+    }
+  };
+
+  return (
+    <div className="flex gap-2 p-2 rounded-md bg-muted/30 border border-border/50">
+      {/* Left col: Square Image */}
+      <div className="w-14 h-14 rounded-md bg-background flex items-center justify-center text-2xl shrink-0">
+        {item.image}
+      </div>
+
+      {/* Middle col: Name + Price + UOM */}
+      <div className="flex-1 min-w-0 flex flex-col justify-center">
+        {/* Row 1: Product name */}
+        <h4 className="font-medium text-sm truncate leading-tight">
+          {item.name}
+        </h4>
+        {/* Row 2: Price */}
+        <span className="text-sm font-semibold text-primary mt-0.5">
+          {formatCurrency(item.price * item.quantity)}
+        </span>
+        {/* Row 3: UOM */}
+        <div className="mt-1">
+          <Select
+            value={item.uom || "pc"}
+            onValueChange={(val) => actions.updateItem(item.id, "uom", val)}
+          >
+            <SelectTrigger className="h-7 cursor-pointer text-xs font-medium w-18 bg-background/50 border-border/50">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {uomOptions.map((uom) => (
+                <SelectItem key={uom.id} value={uom.id} className="text-xs">
+                  {uom.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Right col: Delete + Qty */}
+      <div className="flex flex-col items-end justify-between shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => actions.removeItem(item.id)}
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={() => {
+              actions.decrementItem(item.id);
+              setLocalQty((parseInt(localQty, 10) - 1).toString());
+            }}
+          >
+            <Minus className="w-3 h-3" />
+          </Button>
+          <Input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={localQty}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            className="w-16 h-8 text-center text-sm font-medium rounded-md"
+          />
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={() => {
+              actions.incrementItem(item.id);
+              setLocalQty((parseInt(localQty, 10) + 1).toString());
+            }}
+          >
+            <Plus className="w-3 h-3" />
           </Button>
         </div>
       </div>

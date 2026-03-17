@@ -111,6 +111,8 @@ function cardViewReducer(state, action) {
                 taxRate: product.taxRate,
                 quantity: 1,
                 image: product.image,
+                uom: product.uom || "pc",
+                discount: product.discount || 0,
               },
             ],
           };
@@ -213,18 +215,23 @@ const parseNumber = (val) => {
 export const calculateOrderTotals = (orderItems) => {
   let subTotal = 0;
   let taxTotal = 0;
+  let discountTotal = 0;
 
   orderItems.forEach((item) => {
     const qty = parseNumber(item.quantity);
     const price = parseNumber(item.price);
     const taxRate = parseNumber(item.taxRate || 18);
+    const discount = parseNumber(item.discount || 0);
     const lineBase = qty * price;
-    const lineTax = (lineBase * taxRate) / 100;
+    const lineDiscount = (lineBase * discount) / 100;
+    const lineTax = ((lineBase - lineDiscount) * taxRate) / 100;
     subTotal += lineBase;
+    discountTotal += lineDiscount;
     taxTotal += lineTax;
   });
 
-  return { subTotal, taxTotal, grandTotal: subTotal + taxTotal };
+  const grandTotal = subTotal - discountTotal + taxTotal;
+  return { subTotal, discount: discountTotal, taxTotal, grandTotal };
 };
 
 export function useCardViewReducer() {

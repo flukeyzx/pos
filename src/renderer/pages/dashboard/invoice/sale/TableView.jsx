@@ -4,6 +4,8 @@ import {
   Plus, 
   Trash2, 
   X,
+  Grid3X3,
+  List,
 } from "lucide-react";
 import { Button } from "@/renderer/components/ui/button";
 import { Input } from "@/renderer/components/ui/input";
@@ -14,7 +16,7 @@ import {
   filterProducts 
 } from "./sale-data";
 
-function TableView() {
+function TableView({ viewMode, setViewMode }) {
   const { state, actions } = useTableViewReducer();
 
   const filteredProducts = useMemo(
@@ -29,6 +31,29 @@ function TableView() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header with View Toggle */}
+      <div className="flex items-center justify-between mb-3 shrink-0">
+        <h2 className="text-lg font-semibold">Sale Invoice</h2>
+        <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5 shrink-0">
+          <Button
+            variant={viewMode === "card" ? "default" : "ghost"}
+            size="sm"
+            className="h-7 px-2"
+            onClick={() => setViewMode("card")}
+          >
+            <Grid3X3 className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant={viewMode === "table" ? "default" : "ghost"}
+            size="sm"
+            className="h-7 px-2"
+            onClick={() => setViewMode("table")}
+          >
+            <List className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </div>
+
       {/* Search */}
       <div className="mb-3 shrink-0">
         <div className="relative">
